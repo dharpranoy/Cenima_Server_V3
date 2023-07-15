@@ -20,31 +20,32 @@ public class MovieMappingService {
     @Autowired
     private ReviewRepository reviewRepository;
 
-     public List<MovieDto> getAllMoviesForCast(String castName) {
+    public List<MovieDto> getAllMoviesForCast(String castName) {
         return castRepository.findByCastNameContaining(castName)
                 .stream()
                 .map(this::convertDataIntoDTO)
                 .collect(Collectors.toList());
     }
-     private MovieDto convertDataIntoDTO (Cast cast) {
+
+    private MovieDto convertDataIntoDTO(Cast cast) {
 
         MovieDto dto = new MovieDto();
         dto.setCastName(cast.getCastName());
 
         Movie movie = cast.getMovie();
         if (movie != null) {
-                if (reviewRepository.rating(movie.getMovieId()) != null) {
-                    movie.setRating(reviewRepository.rating(movie.getMovieId()));
-                }
+            if (reviewRepository.rating(movie.getMovieId()) != null) {
+                movie.setRating(reviewRepository.rating(movie.getMovieId()));
             }
+        }
         dto.setRating(movie.getRating());
         dto.setMovieId(movie.getMovieId());
         dto.setPosterUrl(movie.getPosterUrl());
         dto.setMovieDesc(movie.getMovieDesc());
         dto.setTitle(movie.getTitle());
-      
-      return dto;
-       
-     }  
-    
+
+        return dto;
+
+    }
+
 }

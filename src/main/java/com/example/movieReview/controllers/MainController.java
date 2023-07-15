@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.*;
 @ResponseBody
 public class MainController {
 
-  @GetMapping("/api/home")
+  @GetMapping("/user/home")
   public String getResponseTest() {
-    return "Package";
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String uid = ((UserDetails) authentication.getPrincipal()).getUsername();
+    return uid;
   }
 
 }

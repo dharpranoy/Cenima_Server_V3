@@ -7,19 +7,18 @@ public class MovieDto {
     private String rating;
     private String castName;
     private String movieDesc;
-   
 
     public MovieDto() {
 
     }
 
-    public MovieDto(String title,String movieId, String posterUrl,
-            String castName,String movieDesc) {
+    public MovieDto(String title, String movieId, String posterUrl,
+            String castName, String movieDesc) {
         this.title = title;
-        this.movieId=movieId;
+        this.movieId = movieId;
         this.posterUrl = posterUrl;
         this.castName = castName;
-        this.movieDesc=movieDesc;
+        this.movieDesc = movieDesc;
     }
 
     public String getTitle() {
@@ -69,6 +68,5 @@ public class MovieDto {
     public void setRating(String rating) {
         this.rating = rating;
     }
-    
 
 }

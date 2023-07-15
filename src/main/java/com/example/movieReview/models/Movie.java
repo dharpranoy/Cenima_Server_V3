@@ -35,7 +35,7 @@ public class Movie {
   private String motionPictureRating;
   private String movieDesc;
   private String runtime;
-  private double collection;
+  private String collection;
   private String posterUrl;
   @Transient
   private String rating;
@@ -64,7 +64,7 @@ public class Movie {
   }
 
   public Movie(String movieId, String title, String director, String producer, String motionPictureRating,
-      String movieDesc, String runtime, double collection, String posterUrl, Set<Genre> genres, String language,
+      String movieDesc, String runtime, String collection, String posterUrl, Set<Genre> genres, String language,
       LocalDate releaseDate, Set<Cast> casts) {
     this.movieId = movieId;
     this.title = title;
@@ -83,7 +83,7 @@ public class Movie {
   }
 
   public Movie(String title, String director, String producer, String motionPictureRating,
-      String movieDesc, String runtime, double collection, String postUrl, Set<Genre> genres, String language,
+      String movieDesc, String runtime, String collection, String postUrl, Set<Genre> genres, String language,
       LocalDate releaseDate) {
 
     this.title = title;
@@ -155,11 +155,11 @@ public class Movie {
     this.runtime = runtime;
   }
 
-  public double getCollection() {
+  public String getCollection() {
     return collection;
   }
 
-  public void setCollection(double collection) {
+  public void setCollection(String collection) {
     this.collection = collection;
   }
 
@@ -219,12 +219,10 @@ public class Movie {
     cast.setMovie(this);
   }
 
-   public void addGenre(Genre genre) {
+  public void addGenre(Genre genre) {
     genres.add(genre);
     genre.setMovie(this);
   }
-
-
 
   public String getPosterUrl() {
     return posterUrl;

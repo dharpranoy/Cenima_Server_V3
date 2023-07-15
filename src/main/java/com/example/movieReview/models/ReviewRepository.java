@@ -13,7 +13,7 @@ public interface ReviewRepository extends CrudRepository<Review, String> {
 
     List<Review> findByReviewId(String reviewId);
 
-    @Query(value = "select CAST(AVG(r.rating) AS DECIMAL(10,1)) from review r where movie_id=?1",nativeQuery = true)
+    @Query(value = "select CAST(AVG(r.rating) AS DECIMAL(10,1)) from review r where movie_id=?1", nativeQuery = true)
     String rating(String movieId);
 
     @Transactional

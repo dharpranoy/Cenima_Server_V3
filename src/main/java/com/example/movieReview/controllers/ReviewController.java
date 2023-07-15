@@ -17,6 +17,9 @@ import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @Controller
@@ -28,6 +31,8 @@ public class ReviewController {
     private final UserRepository userRepository;
 
     private final ReviewRepository reviewRepository;
+
+    Authentication authentication;
 
     @Autowired
     public ReviewController(MovieRepository movieRepository,
@@ -79,12 +84,15 @@ public class ReviewController {
     }
 
     // add review to a movie
-    @PostMapping("api/reviews/{movieId}")
+    @PostMapping("user/reviews/{movieId}")
     public ResponseEntity<Review> createReview(@PathVariable(value = "movieId") String movieId,
             @RequestBody Review reviewRequest) {
+        authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Review review = movieRepository.findById(movieId).map(movie -> {
-            User user = userRepository.findById(reviewRequest.getUserId()).orElse(null);
+            User user = userRepository.findByUserName(userDetails.getUsername()).get(0);
             reviewRequest.setUsername(user.getUserName());
+            reviewRequest.setUserId(user.getUserId());
 
             reviewRequest.setMovie(movie);
             return reviewRepository.save(reviewRequest);

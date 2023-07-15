@@ -21,6 +21,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +33,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.movieReview.models.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.minidev.json.JSONObject;
 
 import com.example.movieReview.config.JwtTokenUtil;
 import com.example.movieReview.models.User;
+
 @CrossOrigin(origins = "http://localhost:3000")
 @Controller
 @ResponseBody
@@ -103,7 +106,9 @@ public class AuthController {
       token = jwtTokenUtil.generateToken(sessionId);
 
       responseObject.put("token", token);
-      responseObject.put("user", authentication.getPrincipal());
+      responseObject.put("user",
+          userRepository.findByUserName(((UserDetails) authentication.getPrincipal()).getUsername()).get(0));
+      responseObject.put("user_role", ((UserDetails) authentication.getPrincipal()).getAuthorities());
 
     } catch (Exception e) {
       System.out.println(e.getMessage());
@@ -130,6 +135,18 @@ public class AuthController {
 
     return ResponseEntity.badRequest().body("Invalid Request For User");
 
+  }
+
+  @GetMapping("/api/logout")
+  public ResponseEntity<?> LogoutUser(HttpServletRequest request, HttpServletResponse response) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
+
+    if (auth != null) {
+      securityContextLogoutHandler.logout(request, response, auth);
+    }
+    System.out.println("logged out");
+    return ResponseEntity.ok("logged out");
   }
 
   @Secured("ROLE_ADMIN")
