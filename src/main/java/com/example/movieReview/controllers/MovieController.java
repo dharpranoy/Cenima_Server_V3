@@ -29,30 +29,28 @@ public class MovieController {
 
     @Autowired
     public MovieController(MovieRepository movieRepository, ReviewRepository reviewRepository,
-           MovieGenreMappingService movieGenreMappingService) {
+            MovieGenreMappingService movieGenreMappingService) {
         this.movieRepository = movieRepository;
         this.movieGenreMappingService = movieGenreMappingService;
         this.reviewRepository = reviewRepository;
     }
 
     // add movie
-    @PostMapping("api/movies")
+    @PostMapping("admin/movies")
     public ResponseEntity<Movie> createMovie(@RequestBody Movie movie) {
-       if (movie.getCasts() != null) {
+        if (movie.getCasts() != null) {
             for (Cast cast : movie.getCasts())
-            if(cast.getCastName()!=""){
-                movie.addCast(cast);
-            }
+                if (cast.getCastName() != "") {
+                    movie.addCast(cast);
+                }
         }
 
-         if (movie.getGenres() != null) {
+        if (movie.getGenres() != null) {
             for (Genre genre : movie.getGenres())
-            if(genre.getCategory()!=""){
-                movie.addGenre(genre);
-            }
+                if (genre.getCategory() != "") {
+                    movie.addGenre(genre);
+                }
         }
-
-    
 
         Movie _movie = movieRepository.save(movie);
         return new ResponseEntity<>(_movie, HttpStatus.CREATED);
@@ -76,9 +74,9 @@ public class MovieController {
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
-    //retrives movie that has rating greater than 4
+    // retrives movie that has rating greater than 4
     @GetMapping("api/movies/recommendation")
-    public ResponseEntity<List<Movie>> getMoviesForRecommendation(){
+    public ResponseEntity<List<Movie>> getMoviesForRecommendation() {
         List<Movie> movies = movieRepository.findAll();
         List<Movie> rMovies = new ArrayList<>();
         for (Movie mov : movies) {
@@ -87,11 +85,11 @@ public class MovieController {
                     mov.setRating(reviewRepository.rating(mov.getMovieId()));
                 }
                 if (mov.getRating() != null && Double.parseDouble(mov.getRating()) >= 4) {
-                rMovies.add(mov);
-            }
+                    rMovies.add(mov);
+                }
             }
         }
-         return new ResponseEntity<>(rMovies, HttpStatus.OK);
+        return new ResponseEntity<>(rMovies, HttpStatus.OK);
 
     }
 
@@ -104,25 +102,25 @@ public class MovieController {
     }
 
     // update movie detail by id
-    @PutMapping("api/movies/{movieId}")
+    @PutMapping("admin/movies/{movieId}")
     public ResponseEntity<Movie> updateMovie(@PathVariable("movieId") String movieId, @RequestBody Movie movie) {
         Movie _movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("not found movie with id" + movieId));
 
         if (movie.getCasts() != null) {
             for (Cast cast : movie.getCasts())
-            if(cast.getCastName()!=""){
-                _movie.addCast(cast);
-            }
+                if (cast.getCastName() != "") {
+                    _movie.addCast(cast);
+                }
         }
 
-         if (movie.getGenres() != null) {
+        if (movie.getGenres() != null) {
             for (Genre genre : movie.getGenres())
-            if(genre.getCategory()!=""){
-                _movie.addGenre(genre);
-            }
+                if (genre.getCategory() != "") {
+                    _movie.addGenre(genre);
+                }
         }
-        //System.out.println(movie.getGenres());
+        // System.out.println(movie.getGenres());
         _movie.setTitle(movie.getTitle());
         _movie.setRuntime(movie.getRuntime());
         _movie.setReleaseDate(movie.getReleaseDate());
@@ -133,19 +131,20 @@ public class MovieController {
         _movie.setDirector(movie.getDirector());
         _movie.setCollection(movie.getCollection());
         _movie.setPosterUrl(movie.getPosterUrl());
+        _movie.setTrailerId(movie.getTrailerId());
         return new ResponseEntity<>(movieRepository.save(_movie), HttpStatus.OK);
 
     }
 
     // deletes all the movies
-    @DeleteMapping("api/movies")
+    @DeleteMapping("admin/movies")
     public ResponseEntity<HttpStatus> deleteAllMovies() {
         movieRepository.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     // delete movie by movieId
-    @DeleteMapping("api/movies/{movieId}")
+    @DeleteMapping("admin/movies/{movieId}")
     public ResponseEntity<HttpStatus> deleteMovie(@PathVariable("movieId") String movieId) {
         Movie _movie = movieRepository.findById(movieId).orElse(null);
         _movie.getGenres().clear();
@@ -156,7 +155,8 @@ public class MovieController {
     // search movie by title
     @GetMapping("api/movies/search/title")
     public ResponseEntity<List<Movie>> getMovieByTitle(@RequestParam("title") String title) {
-        List<Movie> movies = movieRepository.findByTitle(title);
+        title = title.toLowerCase();
+        List<Movie> movies = movieRepository.findMoviesByTitleContainingSequence(title);
         for (Movie mov : movies) {
             if (mov != null) {
                 if (reviewRepository.rating(mov.getMovieId()) != null) {
@@ -168,41 +168,44 @@ public class MovieController {
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
-   // search movie by genre
+    // search movie by genre
     @GetMapping("/api/movies/search/genre")
- public ResponseEntity<List<MovieGenreDto>> getmoviesForCast(@RequestParam("category") String category) {
+    public ResponseEntity<List<MovieGenreDto>> getmoviesForCast(@RequestParam("category") String category) {
         List<MovieGenreDto> movieGnereDtoList = movieGenreMappingService.getAllMoviesForGenre(category);
         return new ResponseEntity<>(movieGnereDtoList, HttpStatus.OK);
     }
 
-    /*//to delete genre of a movie
-    @PutMapping("api/movies/{genreId}/{movieId}")
-    public ResponseEntity<String> removeGenre(@PathVariable String movieId, @PathVariable String genreId) {
-
-        Genre genreToRemove = null;
-        Movie _movie = movieRepository.findById(movieId).orElse(null);
-        if (_movie != null) {
-
-            for (Genre genre : _movie.getGenres()) {
-                if (genre.getGenreId().equals(genreId)) {
-                    genreToRemove = genre;
-                    break;
-                }
-            }
-        }
-        if (genreToRemove == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // Remove the genre from the movie's genres
-        _movie.removeGenre(genreToRemove);
-
-        // Save the updated movie
-        movieRepository.save(_movie);
-
-        return new ResponseEntity<String>("genre removed", HttpStatus.OK);
-    }
-*/
+    /*
+     * //to delete genre of a movie
+     * 
+     * @PutMapping("api/movies/{genreId}/{movieId}")
+     * public ResponseEntity<String> removeGenre(@PathVariable String
+     * movieId, @PathVariable String genreId) {
+     * 
+     * Genre genreToRemove = null;
+     * Movie _movie = movieRepository.findById(movieId).orElse(null);
+     * if (_movie != null) {
+     * 
+     * for (Genre genre : _movie.getGenres()) {
+     * if (genre.getGenreId().equals(genreId)) {
+     * genreToRemove = genre;
+     * break;
+     * }
+     * }
+     * }
+     * if (genreToRemove == null) {
+     * return ResponseEntity.notFound().build();
+     * }
+     * 
+     * // Remove the genre from the movie's genres
+     * _movie.removeGenre(genreToRemove);
+     * 
+     * // Save the updated movie
+     * movieRepository.save(_movie);
+     * 
+     * return new ResponseEntity<String>("genre removed", HttpStatus.OK);
+     * }
+     */
     /*
      * {19421712-77f9-446f-813c-7a85338bd8b0
      * "title":"mozhi",

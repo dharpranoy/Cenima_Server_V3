@@ -28,30 +28,34 @@ public class TrendingController {
     private final ReviewRepository reviewRepository;
 
     @Autowired
-    public TrendingController(TrendingRepository trendingRepository, MovieRepository movieRepository,ReviewRepository reviewRepository) {
+    public TrendingController(TrendingRepository trendingRepository, MovieRepository movieRepository,
+            ReviewRepository reviewRepository) {
         this.trendingRepository = trendingRepository;
         this.movieRepository = movieRepository;
-        this.reviewRepository=reviewRepository;
+        this.reviewRepository = reviewRepository;
 
     }
 
-    @PostMapping("api/trending/{movieId}")
+    // add a movie to trending
+
+    @GetMapping("/admin/trending/{movieId}")
     public ResponseEntity<String> addTrending(@PathVariable String movieId) {
         Movie movie = movieRepository.findById(movieId).orElse(null);
         if (movie != null) {
             Trending trending = new Trending();
             trending.setMovie(movie);
             trendingRepository.save(trending);
-           // System.out.println("hii");
+            // System.out.println("hii");
             return ResponseEntity.ok("Movie added to trending");
         }
         return ResponseEntity.notFound().build();
 
     }
 
+    // is a movie trending
     @GetMapping("/api/trending/istrending/{movieId}")
     public boolean isTrending(@PathVariable String movieId) {
-       
+
         Optional<Trending> optionalTrending = trendingRepository.findByMovieMovieId(movieId);
         if (optionalTrending.isPresent()) {
             Trending trending = optionalTrending.get();
@@ -62,13 +66,14 @@ public class TrendingController {
 
     }
 
+    // list of trending movies
     @GetMapping("/api/trending")
     public ResponseEntity<List<Movie>> getAllTrendingMovies() {
         List<Trending> trendingMovies = trendingRepository.findAll();
         List<Movie> movies = new ArrayList<>();
 
         for (Trending trending : trendingMovies) {
-            Movie mov  = trending.getMovie();
+            Movie mov = trending.getMovie();
             if (mov != null) {
                 if (reviewRepository.rating(mov.getMovieId()) != null) {
                     mov.setRating(reviewRepository.rating(mov.getMovieId()));
@@ -80,27 +85,22 @@ public class TrendingController {
         return ResponseEntity.ok(movies);
     }
 
-    @DeleteMapping("api/trending/{movieId}")
+    // delete a movie from trending
+    @DeleteMapping("/admin/trending/{movieId}")
     public ResponseEntity<String> deleteMovieFromTrending(@PathVariable String movieId) {
         Movie movie = movieRepository.findById(movieId).orElse(null);
-          if (movie!=null) {
+        if (movie != null) {
             Trending trending = movie.getTrending();
-             movie.setTrending(null);
+            movie.setTrending(null);
 
             trending.setMovie(null);
-             movieRepository.save(movie); // Update the movie entity to remove the association
+            movieRepository.save(movie); // Update the movie entity to remove the association
 
             trendingRepository.delete(trending); // Delete the Trending entity
             return ResponseEntity.ok("Movie removed from trending");
-          }
-          else{
-             return ResponseEntity.notFound().build();
-          }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-        
-}
- 
 
-       
-       
- 
+}

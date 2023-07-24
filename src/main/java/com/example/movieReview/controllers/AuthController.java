@@ -137,16 +137,18 @@ public class AuthController {
 
   }
 
-  @GetMapping("/api/logout")
-  public ResponseEntity<?> LogoutUser(HttpServletRequest request, HttpServletResponse response) {
+  @GetMapping("/user/logout")
+  public ResponseEntity<HttpStatus> LogoutUser(HttpServletRequest request, HttpServletResponse response) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
-
+    System.out.println(auth == null);
     if (auth != null) {
       securityContextLogoutHandler.logout(request, response, auth);
+      System.out.println("logged out");
+      return new ResponseEntity<>(HttpStatus.OK);
     }
-    System.out.println("logged out");
-    return ResponseEntity.ok("logged out");
+
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Secured("ROLE_ADMIN")

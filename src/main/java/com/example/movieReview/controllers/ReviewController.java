@@ -17,6 +17,7 @@ import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -64,16 +65,24 @@ public class ReviewController {
     }
 
     // update review by reviewId
-    @PutMapping("api/reviews/{reviewId}")
+    @Secured("ROLE_USER")
+    @PutMapping("user/reviews/{reviewId}")
     public ResponseEntity<Review> updateReview(@PathVariable(value = "reviewId") String reviewId,
             @RequestBody Review reviewRequest) {
+        authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
         Review _Review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found with id " + reviewId));
-        User user = userRepository.findById(reviewRequest.getUserId()).orElse(null);
+        User user = userRepository.findByUserName(userDetails.getUsername()).get(0);
+
         reviewRequest.setUsername(user.getUserName());
+        reviewRequest.setUserId(user.getUserId());
+
         if (_Review != null) {
             _Review.setRating(reviewRequest.getRating());
             _Review.setReviewText(reviewRequest.getReviewText());
+            _Review.setUsername(reviewRequest.getUsername());
             _Review.setEdited(true);
             _Review.setReviewDate(LocalDate.now());
         } else {
@@ -110,9 +119,29 @@ public class ReviewController {
     }
 
     // delete review by reviewId
-    @DeleteMapping("api/reviews/{reviewId}")
+    @DeleteMapping("user/reviews/{reviewId}")
     public ResponseEntity<HttpStatus> deleteReviewById(@PathVariable(value = "reviewId") String reviewId) {
         reviewRepository.deleteById(reviewId);
+        System.out.println("review deleted");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("user/reviews/specific/")
+    public ResponseEntity<List<Review>> getUserReviews() {
+        List<Review> reviews = (List<Review>) reviewRepository.findAll();
+        List<Review> results = new ArrayList<>();
+        authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = userRepository.findByUserName(userDetails.getUsername()).get(0);
+
+        for (Review rv : reviews) {
+            if (user != null) {
+                rv.setMovieId(rv.getMovie().getMovieId());
+                rv.setUsername(user.getUserName());
+                results.add(rv);
+            }
+        }
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
     }
 }

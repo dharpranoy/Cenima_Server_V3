@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.GeneratedValue;
@@ -33,10 +34,13 @@ public class Movie {
   private String director;
   private String producer;
   private String motionPictureRating;
+  @Column(length = 1500)
   private String movieDesc;
   private String runtime;
   private String collection;
+  @Column(length = 1000)
   private String posterUrl;
+  private String trailerId;
   @Transient
   private String rating;
 
@@ -80,23 +84,6 @@ public class Movie {
     this.releaseDate = releaseDate;
     this.casts = casts;
 
-  }
-
-  public Movie(String title, String director, String producer, String motionPictureRating,
-      String movieDesc, String runtime, String collection, String postUrl, Set<Genre> genres, String language,
-      LocalDate releaseDate) {
-
-    this.title = title;
-    this.director = director;
-    this.producer = producer;
-    this.motionPictureRating = motionPictureRating;
-    this.movieDesc = movieDesc;
-    this.runtime = runtime;
-    this.collection = collection;
-    this.posterUrl = postUrl;
-    this.genres = genres;
-    this.language = language;
-    this.releaseDate = releaseDate;
   }
 
   public String getMovieId() {
@@ -203,17 +190,6 @@ public class Movie {
     this.reviews = reviews;
   }
 
-  /*
-   * public void addReview(Review review) {
-   * reviews.add(review);
-   * review.setMovie(this);
-   * }
-   * 
-   * public void removeReview(Review review) {
-   * reviews.remove(review);
-   * review.setMovie(null);
-   * }
-   */
   public void addCast(Cast cast) {
     casts.add(cast);
     cast.setMovie(this);
@@ -251,4 +227,11 @@ public class Movie {
     }
   }
 
+  public String getTrailerId() {
+    return trailerId;
+  }
+
+  public void setTrailerId(String trailerId) {
+    this.trailerId = trailerId;
+  }
 }

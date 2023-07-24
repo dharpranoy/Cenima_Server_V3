@@ -2,13 +2,12 @@ package com.example.movieReview.models;
 
 import java.time.LocalDate;
 
-
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -24,19 +23,20 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 public class Review {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     public String reviewId;
     @NotNull
     public String userId;
 
-    @Lob
+    @Column(length = 1500)
     private String reviewText;
     private double rating;
     private LocalDate reviewDate;
     @Transient
     private String username;
+    @Transient
+    private String movieId;
 
     private String source = "Cinema";
 
@@ -45,15 +45,12 @@ public class Review {
     }
 
     private boolean edited = false;
-    
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "movieId", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private Movie movie;
-
-    
 
     @PrePersist
     public void prePersist() {
@@ -64,18 +61,15 @@ public class Review {
 
     }
 
-    public Review(String reviewId, String reviewText, double rating, String source,String userId, Movie movie) {
+    public Review(String reviewId, String reviewText, double rating, String source, String userId, Movie movie) {
         this.reviewId = reviewId;
         this.reviewText = reviewText;
         this.rating = rating;
         this.source = source;
         this.movie = movie;
-        this.userId=userId;
-       
+        this.userId = userId;
+
     }
-
-    
-
 
     public String getReviewId() {
         return reviewId;
@@ -101,7 +95,6 @@ public class Review {
         this.rating = rating;
     }
 
-    
     public String getUsername() {
         return username;
     }
@@ -146,6 +139,12 @@ public class Review {
         this.userId = userId;
     }
 
-   
+    public String getMovieId() {
+        return movieId;
+    }
+
+    public void setMovieId(String movieId) {
+        this.movieId = movieId;
+    }
 
 }
